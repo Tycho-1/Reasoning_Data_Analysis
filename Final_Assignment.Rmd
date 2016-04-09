@@ -1,0 +1,186 @@
+---
+title: In relative valuation, do factors that characterize key aspects of a company,
+  influence a coresponding  valuation multiple (e.g. price/earnings)
+output: html_document
+---
+```{r,echo=FALSE}
+setwd("D:/my/Documents/Coursera/The Reasoning, Data Analysis, and Writing Specialization/Capstone")
+```
+
+## Introduction and Definitions
+
+Valuation of the stock market, even if far removed from the daily lives of most people, is nevertheless an important part of the functioning of our society and democracy. It is an interaction between investors that yields some 'price', and from there many other possibilities follow. For example: whether the economy could hire extra workers, whether pay could be incerased, leading to higher standard of living and so on. Therefore understanding the mechanism of that process is highly desirable. Fairly valued businesses contribute to a fairer society, stable employment and higher happiness or well-being for every citizen.
+
+Relative valuation is a widespread method for valuing companies and businesses. Even though a sound logic would demand that assessment of any company should be done by gauging its own prospects and details of current situation--the so called 'intrinsic' value--in reality that rarely has been done. More often, the companies are compared to other companies and in that way they are 'relatvely' valued. Naturally, if the whole market is overvalued, we overvalued every company, by using this method. Most obvious example was the dotcom bubble, and many people argued that recent market is also overvalued. 
+
+One important parameter is used to determine how much more or less any business is valued and it is the price to earnings ratio(PE). The idea is very simple--what price we are paying for a unit earnings, the more we pay the higher the valuation of the business, and the reverse. Other parameters are also in use, e.g. price to book(considering the accounting or 'book' value of assets), economic value(EV or the sum of equity and debt) to earnings before interest,tax, depreciation, and amortization(EBITDA). Andrew Smithers argues for yet another approach called 'q-ratio', which is the quotient between the value of the stock market to the corporate net worth. Again if this ratio is high, that indicates overvaluation and the reverse. He also argues that that ratio has a natural mean(or is mean-reverting), implying that whenever q is too high it is bound to come down. That was most prominently seen in the late 90s and the beginning of this century. Mr. Smithers also argues that the PE ratio if properly adjusted for cyclicality and inflation could yield very similar results to the q.
+
+Prof. Robert Shiller on the other hand publishes an index with a specific methodology that is called cyclically adjusted PE(CAPE). As the name suggests it smooths the ordinary PE to a new ratio that would in a way take away any exessive volatility and cyclicality and yield a fairer gauge for the market. The CAPE ratio is calculated for a quite a long period from the late 19 century to this day, which implicitly means that probably there is some 'average' value that is kind of 'normal'. Although prof. Shiller stresses that his paper does not imply that, i.e. he states that there could be a diffrent regime, or maybe the relation is non-linear(he uses linear models), nevertheless he is arguing that the current values of the CAPE are significantly higher than the average of a more than 100 years. 
+
+Of course all these values are determined by the market, meaning that it all depends on how would market participants interpret all these measures. If investors believe that higher PE ratios are justified it will stay that way. The idea of the averages is an appealing one, not least because it is widely used in natural sciences(e.g. phisics). For example the rate of radioactive decay of a particular element has, as a property, some average number or value, determined by clear and objective characteristics. So, when thinking of a social/economic characteristic like PE we tend to assume the same logic as the one in the nature. That may be warranted sometimes but not always. For example governments have a duty to provide economic growth and opportunities for each citizens, but that cannot be taken as granted. In order to achieve growth in economy some parts of it must prosper and inevitably some would be less in favor. In democratic society that issue may not always be resolved, it has been done successfully so far, and maybe would be done somehow in the future, but it is by no means guaranteed. We have seen very low growth rates recently in Europe, Japan and even in US. If the governments manage to revive the economy we can see the high valuation multiples endure, but this remains to be seen. 
+
+I would argue with this analysis that other factors also play a role in determining how much a company should be valued, 'on average', that is(or relatively), and that by controlling for these factors one would gain a better perception about the market conditions.
+I would confine my analysis only to the PE ratio, and trying to show that, maybe, looking at the multiple only by itself, would not yield any precise insight as to how a company is valued. So, being above or below some average is not indicative as to how 'fair' a business is valued. Rather many other factors play a role in the formation of any number af any particular multiple. For the PE, it is important how fast the company will grow in the future, what it is paying its shreholders, how risky it is, and many more.
+
+## The Data Analysis
+
+### Data collection 
+Data are gathered from Capital IQ a financial information service provider(parent organization S&P, McGraw Hill). It concerns mainly major companies around the world, i.e. all with very large market capitalzations (in US dollar). Financial institutions are excluded. A simple summation of the variable of market capitalization yields approximately 17.6 trillion dollars. The units of observation are individual companies. So for each firm a bunch of financial information is provided.
+
+### Variables
+The variables consist of different financilal measures about each of the companies. Most of them are numerical. For example the essential numbers from the balance sheet, income and cash flow statements are gathered. In addition, other statistics like measures of risk(beta or the standard deviation), expected growth for different variables from analysts, and also some information about corporate governance and ownership. In total 124 variables, and not all are used for the analysis. New variables are created for the various valuation multiples, i.e price/earnings, price/book, payout ratio, etc. 
+
+```{r,warning=FALSE,message=FALSE,echo=FALSE}
+library(xlsx)
+data <- read.xlsx2("./dataNov15.xls", sheetIndex=1, startRow = 2, header=T,
+                   colClasses=c(rep("character",2),"integer",
+                                rep("character",3),rep("numeric", 13), "character",
+                                rep("numeric",104)), stringsAsFactors = F)
+data[,125] <- data[,9]/data[,93] #PE or price/earnings
+data[,126] <- data[,9]/data[,69] #PB or price/book value
+data[,127] <- (data[,69] + data[,67] - data[,63])/data[,49] #EVEBITDA               
+data[,128] <- data[,98]/data[,93] #Payout  
+data[,129] <- data[,51]/data[,69] #ROE return on equity
+names(data)[125:129] <- c("PE","PB","EVEBITDA","payout", "ROE")
+data$PE[data$PE<0] <- NaN #ignoring the negative values
+names(data)[16] <- "beta" #using the beta computed from the last 2 years
+names(data)[31] <- "growth" #expected growth in EPS for the next 5 years
+```
+
+### The type of study
+The type of study is firmly observaional. The companies are not chosen randomly, indeed they are selected based on their market capitalization, i.e. deliberately excluding small firms. Therefore many potenial biases could be discerned here, from the purely statistical vantige point, though in business many people completely ignore this facet and act as though they have an ideal conditions. 
+
+### Scope of inference--generalizability
+The population of intrest could be described as relations between underlying factors and valuation multiple of a company. From theoretical point of view there should be strict rules that determine how a firm is valued. Since the sample is not random, we cannot generalize our findings for all companies in the market. And because we are dealing with only very large firms, the results maybe generalized only for that subsegment, though on the other hand the fact that different countries are involved could also induce some extra bias owing to different reporting standards.
+
+### Scope of inference--causality 
+Causation is concerned with random assignment, and here that is not the case. We certainly could not maintain that based on this analysis some factor 'caused' our multiple. Only a degree of association could validly be established, with the caveat that our sample represents the situation in the market at particular time. It goes without saying that in different conditions the 'assosiation' could and almost certainly should change. I must emphasize here that many people sometimes overlook all this 'obvious' elements of analysis before making conclusions. 
+
+### Summary statistics--interpretation
+
+```{r,echo=F}
+summary(data$PE)
+```
+From the summary above can be seen that the data is skewed--mean is 34.44, whereas median is 21.73, on the other hand the range is huge around 900. All that suggests that the median gives much clear picture about the PE multiple. The skewness of the data could also somewhat distort the end results since it would almost certainly depart from 'normality'. That should be considered further. 
+On the ther hand the 'explanatory' variables are important in themselvs, namely the correlation between them. That could be seen here:
+```{r,echo=F}
+cor(cbind(data$beta,data$growth,data$payout),use="complete.obs")
+```
+In order for the multiple regression to yield correct result the factors should be correlated at the minimum. Strangely enough, here our variables display that--in my view correlation of .15 is not very high and bodes well for accuracy of the final conclusions. 
+
+### Visualizations
+
+```{r, echo=T,fig.height=3, message=FALSE, warning=FALSE,echo=FALSE}
+library(ggplot2); library(Rmisc)
+g1 <- ggplot(data, aes(data$PE)) + geom_histogram(binwidth = 4) +
+    scale_x_continuous(limits = c(0, 150)) +xlab("Histogram PE") +theme_bw()
+g2 <- ggplot(data, aes(1:nrow(data),data$PE)) + geom_point() + xlab("") + ylab("PE ratio")
+multiplot(g1,g2,cols = 2)
+```
+The histogram and scatter plot of the PE multiple confirm the findings from the summary--highly skewed data with a long right tail and a few significant outliers. All this could really in some way distort the assumptions for a diligent analysis, but nothing can be done since the data is what it is. 
+Also a scatter plot of each variable against our dependent one is provided here:
+
+```{r,message=FALSE,fig.height= 3,warning=FALSE,echo=FALSE}
+g3 <- ggplot(data, aes(beta,PE)) + geom_point()
+g4 <- ggplot(data, aes(growth,PE)) + geom_point()
+g5 <- ggplot(data, aes(payout,PE)) + geom_point()
+multiplot(g3,g4,g5,cols=3)
+```
+Again, it could be seen--some significant outliers, as well as--could be discerned, some positive relation between the growth rate, the payout ratio and the PE multiple. On the other hand the risk, measured by 'beta' appears to be relatively constant, regardless of the value of the PE. 
+The significant outliers and departure of 'normlity', suggests that the residuals of the regression should be analysed. Positive numbers should be expected as a coefficients for the growth rate and payout ratios, based on the scatter plots. And also that the risk measure, for some reason, shows that the companies that are as risky as the market as a whole(i.e. have 'beta' equal approximately to one) have higher PE ratios. 
+
+### Inference and/or modeling
+
+### Stating the hypothesis 
+
+The null hypothesis is that variables growth, risk, and payout do not influence/determine the valuation multiple PE. With resect to the researh question that would mean that we could not control for extra variables and distinguish between ddifferent numbers of PE. The alternative hypothesis is that at least some variables indeed, could 'explain' our multiple.
+
+### Conditions for statistical inference
+
+First condition about the random sample is not matched, but maybe big companies represent better what a company should be doing. Anyways, we could expect some notion of unreliability. The number of observations n=184, which is maybe big enough. Bearing in mind that there are thousands of listed companies, and much more private or unlisted. And the condition of independence--again maybe it is not rigorously fulfilled, but it could be stated that the observation are relatively independent, since large companies are in different industries, and being large probably does not influence other factors.
+
+### The method used
+
+Multiple linear regression is used to disentangle the relations between the PE ratio and factors like risk, potential growth, and payout ratio. That is a common aproach, used widely, and assumes a linear relation between variables. The method works in such a way that it calculates the influence of one variable, excluding the others. It should be noted that there is inference of the model as a whole, and inference of individual coefficients. Also the selection of the 'best' model is important part of the analysis. I tried many different models and the presented one works best. For example: for measure of risk the standard deviation of returns could be used, but I found that the 'beta' works better. Also other variables could be included, or a weighted regression could be used with weights equal to the size of each company.  
+
+### Interpretations of the regression output
+
+The theoretical model of the regression is:
+$$PE = \gamma_0 + \gamma_1 beta + \gamma_2 growth + \gamma_3 payout + u$$
+The output:
+```{r,warning=FALSE,echo=FALSE}
+model <- lm(PE ~ beta + I(100*growth) + I(100*payout), data=data)
+#coef(model)
+summary(lm(PE ~ beta + I(100*growth) + I(100*payout), data=data))$coef
+```
+It should be noted that I multiplied the growth and payout variables by 100 in order to obtain smaller coefficients and the ease of interpretation.  
+First the hypothesis that no variable is significant is rejected by the highly significant F-statistic. The individual coefficients of variables 'growth' and 'payout' are also 'significant' i.e. they are not zero. On the other hand the 'beta' turned out not to be 'significant', i.e. we cannot reject the hypotesis that the coefficient is obtained by pure luck. Nevertheless I decided that it should be in the model, since it is an important paramter and the interaction with the other variables maybe beneficial. The p-values could be interpreted as follows: for the 'beta' there is .463 chance to obtain such number by chance, which is quite high, normally .05 is considered 'significant', i.e. the probability should be so low that we reject the null. That is the case with 'growth'and 'payout' variables: the probability of obtaining such numbes is 1.72e-06 and 2e-16, indeed vanishingly small. Therefore we conclude that these values 'could be believed'. 
+A 95% two-sided confidence intervals could be see in the following output:
+
+```{r,echo=FALSE}
+conf_int <- rbind(summary(model)$coeff[2,1]
+                  +c(-1,1)*summary(model)$coeff[2,2]*qt(.975,df=model$df),
+      summary(model)$coeff[3,1] +c(-1,1)*summary(model)$coeff[3,2]*qt(.975,df=model$df),
+      summary(model)$coeff[4,1] +c(-1,1)*summary(model)$coeff[4,2]*qt(.975,df=model$df))
+row.names(conf_int)<-c("PE","growth","payout")
+conf_int
+```
+Once again it could be ascertained that 0 is part of the possible values of the 'beta' and not of the other variables. These numbers could be interpreted as follows: we have 95% confidence that 'true' values lie in those boundaries. 
+Finally, the economical understanding of the coefficients is that one percentage point increase of growth prospects of a firm leads to .99 increase of the resulting PE ratio. And similarly one percentage point increase in the payout ratio yields .33 increase of the valuation multiple. The risk coefficient even insignificant could be read that the increase of the risk would decrese the PE by -2.85, though that number could be a result of a mere chance, nevertheless that gives some intuition. 
+At the very last: a quick look at the picture of residuals--not very bad--yes we see that there are some large outliers, but all in all they look somewhat 'normal-ish' distributed and kind of random, which is to be desired.
+```{r,echo=FALSE,fig.height=2.5}
+par(mfrow = c(1,2));
+plot(model$residuals,xlab="")
+hist(model$residuals,xlab="")
+```
+
+
+```{r, echo=FALSE,eval=FALSE}
+summary(lm(PE ~ beta + I(100*growth) + I(100*payout), weights = data[,8], data=data))
+summary(lm(PB ~ beta + I(100*growth) + ROE, data=data))
+```
+
+### Potential Criticism
+Probably some readers could object that my findings are too broad, and that maybe it is obvious that key characteristics should influence any multiple. That is true, but finding the correct way to quantifying that influence is the key. My analysis is one way of thinking, of course others could have a different approach. On the other hand prof. Shiller's index concerns time series data, whereas my data are cross-sectional, nonetheless I still think that the sentiment of the market at different times determines the valuation multiple, and it is still crutial to take that information into account. 
+
+## Conclusion
+
+### Summary
+Based on the data at hand for the 184 large companies, it could be concluded that the valuation multiple do indeed reflect the underlying specifics of different businesses. Intuitively, the higher growth that is expected for the future do on average yield a higher valuation, and also the more a company pays its shareholders the higher it is valued. That make sense. In this sample the risk assocoated with the company is not found to bother investors, which could maybe be attributed to a specific market condition at the time. 
+
+The average value over time of a partucular multiple(in this case PE), may not always be a good indicator of whether businesses are 'fairly' valued. Ingrained in any multiple are implicit factors which derermine the ultimate value. Therefore, given these factors we could expect different values for different indicators. Again, everything is dependent on the market--if it really recognizes such factors--at some points it does, and sometimes it des not. The goal of every investor is to make a careful judgement about the particular market condition at different times. That condition, needless to say, could change, leading perhaps to a different conclusion. This analysis, pertains to only a specific point in time. Taking a different snapshot at different time could result in differnt conclusion, nevertheless it still supports the main idea that any multiple is driven by specific characteristics of a company and taking them into account would give as a robust yardstick for measuring the real value of a business.
+
+
+### Discussion about what was learned
+
+The model discovered seem to explain the data relativly well. The R-squared of .91 is really high for economic data, the residuals look also fine. So, we could use the coefficients thus found, to contol for other companies(risk, growth, payout) and determine whether they are relatively over- or undervalued as opposed the the market average. That way a somewhat better insight coud be gleaned with the help of simple basic statistcs. 
+
+### Ideas of possible future research
+
+There could be indeed much for further research. More and differnt valuation multiples could be investigated. The data could be divided into groups: emerging/developed markets, or by sectors. Financial institutions could be studied as well, since they are excluded from this sample due to their different business model.
+
+## References
+
+##### Diez D., Barr C., Cetinkaya-Rundel M., OpenIntro Statistics, Second Edition 2014
+##### Damodaran A., Valuation: Packet 2 Relative valuation, asset based valuation, and private company valuation, September 2015
+##### Campbell J.Y. and Shiller R.J., Valuation ratios and the long-run stock market outlook: An update, NBER working paper 8221 April 2001
+##### Smithers A. and Wright S., Valuing Wall Street. Protecting wealth in turbulent markets, 2000
+##### Fernandez P., Valuation using multiples. How do analysts reach their conclusions?, IESE Business School 2015
+##### Asness C.,  Fighting the Fed model. The relationship between stock market yields, bond market yields and future returns, AQR Capital Management, 2002
+
+## Appendix
+
+[The Data Source](http://www.stern.nyu.edu/~adamodar/pc/datasets/dataNov15.xls)
+
+Excerpt of part of the transformed data:
+
+```{r,echo=FALSE}
+names(data)[1] <- c("company")
+page_example <- cbind(data$company, round(data$PE,2), round(data$beta,2), round(data$growth,2), round(data$payout,2))
+page_example <- as.data.frame(page_example)
+names(page_example) <- c("company","PE","beta","growth","payout")
+head(page_example,25)                     
+```
+
+
+
